@@ -11,6 +11,7 @@ import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 
 import java.time.Duration;
+import java.util.List;
 
 public class UITest {
 
@@ -78,5 +79,29 @@ public class UITest {
         }
 
         driver.close();
+    }
+
+    @Test
+    void amountOfReposAccurate(){
+        // Arrange
+        System.setProperty("webdriver.chrome.driver", "C:\\Users\\14197\\Downloads\\chromedriver_win32\\chromedriver.exe");
+        ChromeOptions options = new ChromeOptions().addArguments("start-fullscreen");
+
+        WebDriver driver = new ChromeDriver(options);
+
+        // this replaces driver.manage().timeout().implicitlyWait().. as it is deprecated.
+        Wait<WebDriver> wait = new FluentWait<>(driver)
+                .withTimeout(Duration.ofSeconds(5));
+
+        String user = "arekkusu6";
+        driver.get("https://github.com/" + user);
+
+        // Act
+        driver.get("https://github.com/arekkusu6?tab=repositories");
+
+        List<WebElement> repos = driver.findElements(By.xpath("//div[@id='user-repositories-list']//li"));
+
+        // Assert
+        Assertions.assertEquals(5, (repos).size());
     }
 }
