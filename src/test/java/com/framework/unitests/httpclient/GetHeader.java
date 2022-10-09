@@ -2,6 +2,8 @@ package com.framework.unitests.httpclient;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,28 +27,21 @@ public class GetHeader {
         Assertions.assertEquals(200, actualCode);
     }
 
-    @Test
-    void contentTypeJson() throws IOException, InterruptedException {
+    @ParameterizedTest
+    @CsvSource({
+            "X-Ratelimit-Limit, 60",
+            "content-type,application/json; charset=utf-8",
+            "server, GitHub.com",
+            "x-frame-options, deny"
+    })
+    void parametrizedTestForHeaders(String header, String expectedValue) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newBuilder().build();
         HttpRequest get = HttpRequest.newBuilder(URI.create(BASE_URL))
                .setHeader("User-Agent", "Http Bot")
                .build();
-
         HttpResponse<Void> response = client.send(get, HttpResponse.BodyHandlers.discarding());
-        String contentType = response.headers().firstValue("Content-Type").get();
+        String contentType = response.headers().firstValue(header).get();
 
-        Assertions.assertEquals("application/json; charset=utf-8", contentType);
-    }
-
-    @Test
-    void xRateLimitIsPresent() throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest get = HttpRequest.newBuilder(URI.create(BASE_URL))
-               .setHeader("User-Agent", "Http Bot")
-               .build();
-
-        HttpResponse<Void> response = client.send(get, HttpResponse.BodyHandlers.discarding());
-        String xRateLimit = response.headers().firstValue("X-Ratelimit-Limit").get();
-        Assertions.assertEquals(60, Integer.parseInt(xRateLimit));
+        Assertions.assertEquals(expectedValue, contentType);
     }
 }
