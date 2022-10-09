@@ -1,5 +1,7 @@
 package com.framework.unitests.httpclient;
 
+import com.framework.entities.User;
+import com.framework.handlers.JsonBodyHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,21 +17,16 @@ public class GetBody {
     private static final String BASE_URL = "https://api.github.com/";
 
     @Test
-    void bodyContainsCurrentUserUrl() {
+    void bodyContainsCurrentUserUrl() throws IOException, InterruptedException {
         HttpClient httpClient = newBuilder().build();
 
         HttpRequest get = HttpRequest.newBuilder(URI.create(BASE_URL + "users/arekkusu6"))
                 .setHeader("User-Agent", "Http Bot")
                 .build();
 
-        HttpResponse<String> response = null;
-        try {
-            response = httpClient.send(get, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        String body = response.body();
+        HttpResponse<User> response = httpClient.send(get, JsonBodyHandler.jsonBodyHandler(User.class));
+        String actualLogin = response.body().getLogin();
 
-        Assertions.assertTrue(body.contains("\"login\":\"arekkusu6\""));
+        Assertions.assertEquals("arekkusu6", actualLogin);
     }
 }
