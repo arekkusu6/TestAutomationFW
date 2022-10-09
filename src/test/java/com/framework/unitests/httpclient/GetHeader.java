@@ -24,4 +24,29 @@ public class GetHeader {
 
         Assertions.assertEquals(200, actualCode);
     }
+
+    @Test
+    void contentTypeJson() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newBuilder().build();
+        HttpRequest get = HttpRequest.newBuilder(URI.create(BASE_URL))
+               .setHeader("User-Agent", "Http Bot")
+               .build();
+
+        HttpResponse<Void> response = client.send(get, HttpResponse.BodyHandlers.discarding());
+        String contentType = response.headers().firstValue("Content-Type").get();
+
+        Assertions.assertEquals("application/json; charset=utf-8", contentType);
+    }
+
+    @Test
+    void xRateLimitIsPresent() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newBuilder().build();
+        HttpRequest get = HttpRequest.newBuilder(URI.create(BASE_URL))
+               .setHeader("User-Agent", "Http Bot")
+               .build();
+
+        HttpResponse<Void> response = client.send(get, HttpResponse.BodyHandlers.discarding());
+        String xRateLimit = response.headers().firstValue("X-Ratelimit-Limit").get();
+        Assertions.assertEquals(60, Integer.parseInt(xRateLimit));
+    }
 }
