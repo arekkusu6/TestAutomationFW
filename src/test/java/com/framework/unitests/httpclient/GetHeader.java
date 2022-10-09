@@ -1,6 +1,7 @@
 package com.framework.unitests.httpclient;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -11,19 +12,25 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+import static java.net.http.HttpRequest.newBuilder;
+
 public class GetHeader {
     private static final String BASE_URL = "https://api.github.com";
 
-    @Test
-    void getReturns200() throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest get = HttpRequest.newBuilder(URI.create(BASE_URL))
-                .setHeader("User-Agent", "Http Bot")
+    static HttpClient client = HttpClient.newBuilder().build();
+    static HttpResponse<Void> response;
+
+    @BeforeAll
+    static void sendGetToBaseEndpoint() throws IOException, InterruptedException {
+        HttpRequest get = newBuilder(URI.create(BASE_URL))
+                .setHeader("User-Agent", "Java 11 HttpClient Bot")
                 .build();
+        response = client.send(get, HttpResponse.BodyHandlers.discarding());
+    }
 
-        HttpResponse<Void> response = client.send(get, HttpResponse.BodyHandlers.discarding());
+    @Test
+    void getReturns200() {
         int actualCode = response.statusCode();
-
         Assertions.assertEquals(200, actualCode);
     }
 
@@ -34,14 +41,8 @@ public class GetHeader {
             "server, GitHub.com",
             "x-frame-options, deny"
     })
-    void parametrizedTestForHeaders(String header, String expectedValue) throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest get = HttpRequest.newBuilder(URI.create(BASE_URL))
-               .setHeader("User-Agent", "Http Bot")
-               .build();
-        HttpResponse<Void> response = client.send(get, HttpResponse.BodyHandlers.discarding());
+    void parametrizedTestForHeaders(String header, String expectedValue) {
         String contentType = response.headers().firstValue(header).get();
-
         Assertions.assertEquals(expectedValue, contentType);
     }
 }
